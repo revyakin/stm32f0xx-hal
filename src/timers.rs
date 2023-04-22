@@ -112,6 +112,16 @@ impl CountDown for Timer<SYST> {
 
 impl Periodic for Timer<SYST> {}
 
+pub trait TimerExt<TIM> {
+    fn timer<T: Into<Hertz>>(self, timeout: T, rcc: &mut Rcc) -> Timer<TIM>;
+}
+
+impl TimerExt<SYST> for SYST {
+    fn timer<T: Into<Hertz>>(self, timeout: T, rcc: &mut Rcc) -> Timer<SYST> {
+        Timer::syst(self, timeout, rcc)
+    }
+}
+
 macro_rules! timers {
     ($($TIM:ident: ($tim:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
         $(
@@ -220,6 +230,12 @@ macro_rules! timers {
             }
 
             impl Periodic for Timer<$TIM> {}
+
+            impl TimerExt<$TIM> for $TIM {
+                fn timer<T: Into<Hertz>>(self, timeout: T, rcc: &mut Rcc) -> Timer<$TIM> {
+                    Timer::$tim(self, timeout, rcc)
+                }
+            }
         )+
     }
 }
