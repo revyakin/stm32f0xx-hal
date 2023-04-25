@@ -105,6 +105,14 @@ macro_rules! brk {
     ($_other:ident, $_tim:ident) => {};
 }
 
+pub trait PwmExt {
+    fn pwm<P, PINS, T>(self, pins: PINS, rcc: &mut Rcc, freq: T) -> PINS::Channels
+    where
+        PINS: Pins<Self, P>,
+        T: Into<Hertz>,
+        Self: Sized;
+}
+
 // Timer with four output channels 16 Bit Timer
 macro_rules! pwm_4_channels {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident, $apbenr:ident, $apbrstr:ident),)+) => {
@@ -170,6 +178,16 @@ macro_rules! pwm_4_channels {
                 );
                 //NOTE(unsafe) `PINS::Channels` is a ZST
                 unsafe { MaybeUninit::uninit().assume_init() }
+            }
+
+            impl PwmExt for $TIMX {
+                fn pwm<P, PINS, T>(self, pins: PINS, rcc: &mut Rcc, freq: T) -> PINS::Channels
+                where
+                    PINS: Pins<Self, P>,
+                    T: Into<Hertz>
+                {
+                    $timX(self, pins, rcc, freq)
+                }
             }
 
             impl hal::PwmPin for PwmChannels<$TIMX, C1> {
@@ -356,6 +374,16 @@ macro_rules! pwm_2_channels {
                 unsafe { MaybeUninit::uninit().assume_init() }
             }
 
+            impl PwmExt for $TIMX {
+                fn pwm<P, PINS, T>(self, pins: PINS, rcc: &mut Rcc, freq: T) -> PINS::Channels
+                where
+                    PINS: Pins<Self, P>,
+                    T: Into<Hertz>
+                {
+                    $timX(self, pins, rcc, freq)
+                }
+            }
+
             impl hal::PwmPin for PwmChannels<$TIMX, C1> {
                 type Duty = u16;
 
@@ -465,6 +493,16 @@ macro_rules! pwm_1_channel {
                 unsafe { MaybeUninit::uninit().assume_init() }
             }
 
+            impl PwmExt for $TIMX {
+                fn pwm<P, PINS, T>(self, pins: PINS, rcc: &mut Rcc, freq: T) -> PINS::Channels
+                where
+                    PINS: Pins<Self, P>,
+                    T: Into<Hertz>
+                {
+                    $timX(self, pins, rcc, freq)
+                }
+            }
+
             impl hal::PwmPin for PwmChannels<$TIMX, C1> {
                 type Duty = u16;
 
@@ -546,6 +584,16 @@ macro_rules! pwm_1_channel_with_complementary_outputs {
 
                 //NOTE(unsafe) `PINS::Channels` is a ZST
                 unsafe { MaybeUninit::uninit().assume_init() }
+            }
+
+            impl PwmExt for $TIMX {
+                fn pwm<P, PINS, T>(self, pins: PINS, rcc: &mut Rcc, freq: T) -> PINS::Channels
+                where
+                    PINS: Pins<Self, P>,
+                    T: Into<Hertz>
+                {
+                    $timX(self, pins, rcc, freq)
+                }
             }
 
             impl hal::PwmPin for PwmChannels<$TIMX, C1> {
